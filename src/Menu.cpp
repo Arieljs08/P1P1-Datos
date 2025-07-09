@@ -18,6 +18,8 @@
 #include <sstream>
 #include <ctime>
 #include "Marquee.h"
+#include "qrcodegen.hpp"
+#include <hpdf.h>
 
 void guardarTurnoEnArchivo(Turno *); 
 void guardarPacienteEnArchivo(Paciente *);
@@ -27,6 +29,7 @@ void generarTablaHash();
 void imprimirTablaHash();
 void buscarHashEnArchivo();
 void eliminarHashPorValor(const std::string& );
+static void generateQRCodeFromString(const std::string &);
 
 void Menu::mostrarMenu() {
     cargarPacientesDesdeArchivo();
@@ -256,7 +259,15 @@ void Menu::agregarTurno() {
     Turno* turno = new Turno(*paciente, fecha, provincia, ciudad);
     lista.agregar(turno);
     guardarTurnoEnArchivo(turno);
+    std::string datosQr = "Nombre: " + paciente->getNombre() + "\n"
+                          "Apellido: " + paciente->getApellido() + "\n"
+                          "Cédula: " + paciente->getCedula() + "\n"
+                          "Fecha: " + std::to_string(fecha.getDia()) + "/" + std::to_string(fecha.getMes()) + "/" + std::to_string(fecha.getAnio()) + "\n"
+                          "Hora: " + std::to_string(hora) + ":" + std::to_string(minuto) + "\n"
+                          "Provincia: " + provincia + "\n"
+                          "Ciudad: " + ciudad;
     std::cout << "Turno agregado correctamente a las " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << ".\n";
+    generateQRCodeFromString(datosQr);
 }
 
 
@@ -1142,3 +1153,37 @@ void Menu::buscarHashEnArchivo() {
         }
     }
 }
+
+using std::uint8_t;
+using qrcodegen::QrCode;
+using qrcodegen::QrSegment;
+
+// Versión invertida (fondo negro, QR blanco)
+static void printQRHighContrast(const QrCode &qr) {
+    int border = 1;
+    for (int y = -border; y < qr.getSize() + border; y++) {
+        for (int x = -border; x < qr.getSize() + border; x++) {
+            // Módulos activos (1) = blanco ("  "), inactivos (0) = negro ("██")
+            std::cout << (qr.getModule(x, y) ? "  " : "██");
+        }
+        std::cout << std::endl;
+    }
+}
+
+static void generateQRCodeFromString(const std::string &text) {
+
+    if (text.empty()) {
+        std::cout << "Error: El texto a codificar está vacío.\n";
+        return;
+    }
+
+    try {
+        const QrCode qr = QrCode::encodeText(text.c_str(), QrCode::Ecc::MEDIUM);        
+        // Mostramos el QR con fondo negro y módulos blancos
+        printQRHighContrast(qr);
+
+    } catch (const qrcodegen::data_too_long &e) {
+        std::cout << "\nError: Texto demasiado largo. Intente con menos caracteres.\n\n";
+    }
+}
+
