@@ -176,20 +176,20 @@ void Menu::agregarTurno() {
     std::string direccionCompleta;
 
     while (!direccionValida) {
-        // Solicitar calles específicas o referencia
+        
         std::cout << "Ingrese calles o referencia exacta (ej. Av. America y Mariana de Jesús): ";
         std::getline(std::cin >> std::ws, calles);
 
-        // Construir dirección completa
+        
         direccionCompleta = calles + ", " + ciudad + ", " + provincia;
 
-        // Ejecutar el script de Python
+        
         std::string comandoPython = "python bin\\buscar_centros.py \"" + direccionCompleta + "\"";
         std::cout << "\nBuscando centros médicos cercanos a:\n" << direccionCompleta << "\n\n";
         
         int resultado = system(comandoPython.c_str());
         
-        // Verificar si la dirección fue válida (código de retorno 0 = éxito)
+        
         if (resultado == 0) {
             direccionValida = true;
         } else {
