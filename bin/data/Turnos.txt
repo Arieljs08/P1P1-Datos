@@ -18,7 +18,7 @@ Telefono: 0995545073
 Sexo: M
 Provincia: Pichincha
 Ciudad: Quito
-Fecha y Hora 23/1/2026 -> 10:0
+Fecha y Hora 3/12/2025 -> 10:20
 ------------------------------
 Nombre: Ariel
 Apellido: Hernandez
